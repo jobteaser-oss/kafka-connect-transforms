@@ -1,0 +1,21 @@
+name: java_build_n_push
+on:
+  workflow_dispatch:
+jobs:
+  maven_build:
+    name: Java Build and Publish
+    runs-on: ubuntu-20.04
+    container: "maven:3-jdk-8"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+      - name: Get Maven project version
+        id: version
+        run:  echo "::set-output name=version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: v${{ steps.version.outputs.version }}
+          files: ./target/kafka-connect-transforms-${{ steps.version.outputs.version }}.jar
