@@ -5,7 +5,7 @@ jobs:
   maven_build:
     name: Java Build and Publish
     runs-on: ubuntu-20.04
-    container: "maven:3-jdk-8"
+    container: "maven:3-jdk-17"
     steps:
       - name: Checkout code
         uses: actions/checkout@v3

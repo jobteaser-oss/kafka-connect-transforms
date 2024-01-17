@@ -5,21 +5,17 @@
 
 	<groupId>com.jobteaser.kafka.connect.transforms</groupId>
 	<artifactId>kafka-connect-transforms</artifactId>
-	<version>0.2.5</version>
-	<description>Additionnal Kafka Connect Single Message Transforms (SMT). One to remove null bytes ('\x00') from the values of either the Key or the Value fields of each record. (can be used when sink-ing to PostgreSQL as it doesn't support this char). The other extends the default TimestampConverter to support int32 from Debezium (days since Epoch) and passing a regex to match against multiple fields.
+	<version>0.3.0</version>
+	<description>
+		Additional Kafka Connect Single Message Transforms (SMT).
+		- one to remove null bytes ('\x00') from the values of either the Key or the Value fields of each record. (can be used when sink-ing to PostgreSQL as it doesn't support this char).
+		- one which extends the default TimestampConverter to support int32 from Debezium (days since Epoch) and passing a regex to match against multiple fields.
+		- one to obfuscate first part of email addresses.
 	</description>
 
-	<repositories>
-		<repository>
-			<id>confluent</id>
-			<url>http://packages.confluent.io/maven/</url>
-		</repository>
-	</repositories>
-
 	<properties>
-		<java.version>1.8</java.version>
-		<kafka.version>2.0.0</kafka.version>
-		<confluent.version>5.0.0</confluent.version>
+		<java.version>17</java.version>
+		<kafka.version>3.6.1</kafka.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -42,39 +38,31 @@
 			<version>${kafka.version}</version>
 			<scope>provided</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.16.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<version>5.9.1</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
-			<!--force java 8 -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.6.1</version>
+				<version>3.12.1</version>
 				<configuration>
 					<source>${java.version}</source>
 					<target>${java.version}</target>
 				</configuration>
-			</plugin>
-
-			<!--package using confluent's maven plugin -->
-			<plugin>
-				<groupId>io.confluent</groupId>
-				<artifactId>kafka-connect-maven-plugin</artifactId>
-				<version>0.11.1</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>kafka-connect</goal>
-						</goals>
-						<configuration>
-							<componentTypes>
-								<componentType>transform</componentType>
-							</componentTypes>
-							<ownerUsername>jobteaser</ownerUsername>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
