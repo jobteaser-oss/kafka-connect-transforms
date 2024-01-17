@@ -1,12 +1,13 @@
 package com.jobteaser.kafka.connect.transforms;
 
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.connect.connector.ConnectRecord;
 import org.apache.kafka.connect.data.Field;
@@ -91,7 +92,19 @@ public abstract class ObfuscateEmail<R extends ConnectRecord<R>> implements Tran
             return str;
         }
 
-        return String.format("%s@%s", DigestUtils.md5Hex(matcher.group(1)), matcher.group(2));
+        return String.format("%s@%s", md5(matcher.group(1)), matcher.group(2));
+    }
+
+    private String md5(String s) {
+        MessageDigest messageDigest = null;
+        try {
+            messageDigest = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+        messageDigest.update(s.getBytes());
+        byte[] digest = messageDigest.digest();
+        return String.format("%032x", new BigInteger(1, digest));
     }
 
     @Override

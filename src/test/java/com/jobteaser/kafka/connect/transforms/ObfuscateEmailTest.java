@@ -45,7 +45,7 @@ public class ObfuscateEmailTest {
                         .build();
         final Struct simpleStruct = new Struct(simpleStructSchema)
                         .put("field1", 42L)
-                        .put("email", "abc-def.ghi-jkl123@gmail-test-123abc.fr");
+                        .put("email", "abc@gmail.com");
 
 
         final SourceRecord record = new SourceRecord(null, null, "test", 0, simpleStructSchema, simpleStruct);
@@ -59,8 +59,9 @@ public class ObfuscateEmailTest {
         assertEquals(Schema.STRING_SCHEMA, transformedRecord.valueSchema().field("email").schema());
 
         final String email = ((Struct) transformedRecord.value()).getString("email");
-        assertNotEquals("abc-def.ghi-jkl123@gmail-test-123abc.fr", email);
+        assertNotEquals("abc@gmail.com", email);
         assertTrue(ObfuscateEmail.PATTERN.matcher(email).matches());
+        assertEquals("900150983cd24fb0d6963f7d28e17f72@gmail.com", email);
     }
 
     @Test
