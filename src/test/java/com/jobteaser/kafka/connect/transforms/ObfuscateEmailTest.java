@@ -92,6 +92,34 @@ public class ObfuscateEmailTest {
     }
 
     @Test
+    public void schemaObfuscateEmailFieldNoEmail() {
+        final Map<String, Object> props = new HashMap<>();
+        props.put("email.field.name", "email");
+        smt.configure(props);
+
+        final Schema simpleStructSchema =
+                SchemaBuilder.struct().name("name").version(1).doc("doc")
+                        .field("field1", Schema.OPTIONAL_INT64_SCHEMA)
+                        .field("field2", Schema.STRING_SCHEMA)
+                        .build();
+        final Struct simpleStruct = new Struct(simpleStructSchema)
+                .put("field1", 42L)
+                .put("field2", "abc");
+
+
+        final SourceRecord record = new SourceRecord(null, null, "test", 0, simpleStructSchema, simpleStruct);
+        final SourceRecord transformedRecord = smt.apply(record);
+
+        assertEquals(simpleStructSchema.name(), transformedRecord.valueSchema().name());
+        assertEquals(simpleStructSchema.version(), transformedRecord.valueSchema().version());
+        assertEquals(simpleStructSchema.doc(), transformedRecord.valueSchema().doc());
+        assertEquals(Schema.OPTIONAL_INT64_SCHEMA, transformedRecord.valueSchema().field("field1").schema());
+        assertEquals(42L, ((Struct) transformedRecord.value()).getInt64("field1"));
+        assertEquals(Schema.STRING_SCHEMA, transformedRecord.valueSchema().field("field2").schema());
+        assertEquals("abc", ((Struct) transformedRecord.value()).getString("field2"));
+    }
+
+    @Test
     public void schemalessObfuscateEmailFieldTransform() {
         final Map<String, Object> props = new HashMap<>();
 
@@ -124,5 +152,21 @@ public class ObfuscateEmailTest {
         final SourceRecord transformedRecord = smt.apply(record);
         assertEquals(42L, ((Map<?, ?>) transformedRecord.value()).get("field1"));
         assertEquals("not_a_real_email", ((Map<?, ?>) transformedRecord.value()).get("email"));
+    }
+
+    @Test
+    public void schemalessObfuscateEmailFieldNoEmail() {
+        final Map<String, Object> props = new HashMap<>();
+
+        props.put("email.field.name", "email");
+
+        smt.configure(props);
+
+        final SourceRecord record = new SourceRecord(null, null, "test", 0,
+                null, Map.ofEntries(entry("field1",42L), entry("field2","abc")));
+
+        final SourceRecord transformedRecord = smt.apply(record);
+        assertEquals(42L, ((Map<?, ?>) transformedRecord.value()).get("field1"));
+        assertEquals("abc", ((Map<?, ?>) transformedRecord.value()).get("field2"));
     }
 }

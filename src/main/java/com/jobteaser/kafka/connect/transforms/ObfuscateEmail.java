@@ -2,12 +2,14 @@ package com.jobteaser.kafka.connect.transforms;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.connect.connector.ConnectRecord;
+import org.apache.kafka.connect.data.Field;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.transforms.Transformation;
@@ -43,7 +45,7 @@ public abstract class ObfuscateEmail<R extends ConnectRecord<R>> implements Tran
 
     public void configure(Map<String, ?> props) {
         SimpleConfig config = new SimpleConfig(CONFIG_DEF, props);
-        this.fieldName = config.getString("email.field.name");
+        fieldName = config.getString("email.field.name");
     }
     @Override
     public R apply(R record) {
@@ -56,15 +58,30 @@ public abstract class ObfuscateEmail<R extends ConnectRecord<R>> implements Tran
 
     private R applySchemaless(R record) {
         final Map<String, Object> value = requireMap(operatingValue(record), PURPOSE);
-        final Map<String, Object> updatedValue = new HashMap<>(value);
-        updatedValue.put(fieldName, obfuscate(updatedValue.get(fieldName).toString()));
-        return newRecord(record, null, updatedValue);
+        if (value.containsKey(fieldName)) {
+            final Map<String, Object> updatedValue = new HashMap<>(value);
+            updatedValue.put(fieldName, obfuscate(updatedValue.get(fieldName).toString()));
+            return newRecord(record, null, updatedValue);
+        }
+        return record;
     }
 
     private R applyWithSchema(R record) {
         final Struct value = requireStruct(operatingValue(record), PURPOSE);
-        value.put(fieldName, obfuscate(value.getString(fieldName)));
-        return newRecord(record, value.schema(), value);
+        final Schema schema = operatingSchema(record);
+        final Struct updatedValue = new Struct(schema);
+
+        for (Field field : schema.fields()) {
+            final String fName = field.name();
+            final Object fContent = value.get(fName);
+            if (fName.equals(fieldName)) {
+                updatedValue.put(fName, obfuscate(fContent.toString()));
+            } else {
+                updatedValue.put(fName, fContent);
+            }
+        }
+
+        return newRecord(record, schema, updatedValue);
     }
 
     private String obfuscate(String str) {
