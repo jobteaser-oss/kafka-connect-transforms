@@ -15,7 +15,7 @@ Properties:
 
 Example on how to add to your connector:
 ```
-transforms=obfuscateemail
-transforms.obfuscateemail.type=com.jobteaser.kafka.connect.smt.ObfuscateEmail$Value
-transforms.obfuscateemail.email.field.name="email"
+transforms="obfuscate-email"
+transforms.obfuscate-email.type="com.jobteaser.kafka.connect.transforms.ObfuscateEmail$Value"
+transforms.obfuscate-email.email.field.name="email"
 ```
