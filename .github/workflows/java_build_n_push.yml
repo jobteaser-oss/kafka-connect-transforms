@@ -19,3 +19,4 @@ jobs:
         with:
           name: v${{ steps.version.outputs.version }}
           files: ./target/kafka-connect-transforms-${{ steps.version.outputs.version }}.jar
+          tag_name: v${{ steps.version.outputs.version }}
