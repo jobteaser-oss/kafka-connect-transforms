@@ -39,7 +39,7 @@ public abstract class ObfuscateEmail<R extends ConnectRecord<R>> implements Tran
 
     private static final String PURPOSE = "obfuscate email from record";
 
-    public static final Pattern PATTERN = Pattern.compile("^([\\w-.]+)@([\\w-]+\\.+[\\w-]{2,4})$");
+    public static final Pattern PATTERN = Pattern.compile("^([\\w\\-.]+)@([\\w\\-.]+)+$");
 
     private String fieldName;
 
