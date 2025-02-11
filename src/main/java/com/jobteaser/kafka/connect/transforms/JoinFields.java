@@ -29,6 +29,27 @@ public abstract class JoinFields<R extends ConnectRecord<R>> implements Transfor
         String DESTINATION = "join-fields.destination";
     }
 
+    private static final class DestinationFieldSpec {
+        final String name;
+        final boolean optional;
+
+        private DestinationFieldSpec(String name, boolean optional) {
+            this.name = name;
+            this.optional = optional;
+        }
+
+        public static DestinationFieldSpec parse(String spec) {
+            if (spec == null) return null;
+            if (spec.endsWith("?")) {
+                return new DestinationFieldSpec(spec.substring(0, spec.length() - 1), true);
+            }
+            if (spec.endsWith("!")) {
+                return new DestinationFieldSpec(spec.substring(0, spec.length() - 1), false);
+            }
+            return new DestinationFieldSpec(spec, true);
+        }
+    }
+
     public static final ConfigDef CONFIG_DEF = new ConfigDef()
             .define(
                     ConfigName.JOINED_FIELDS,
@@ -49,14 +70,16 @@ public abstract class JoinFields<R extends ConnectRecord<R>> implements Transfor
                     ConfigDef.Type.STRING,
                     "output",
                     ConfigDef.Importance.HIGH,
-                    "Destination key of the joined field"
+                    "Destination key of the joined field. Suffix with <code>!</code> to make this a " +
+                            "required field, or <code>?</code> to keep it optional. If omitted, it will default to " +
+                            "optional."
             );
 
     private static final String PURPOSE = "join field records into a new field";
 
     private List<String> fieldKeys;
     private String separator;
-    private String destinationKey;
+    private DestinationFieldSpec destinationSpec;
 
     private Cache<Schema, Schema> schemaUpdateCache;
 
@@ -65,7 +88,7 @@ public abstract class JoinFields<R extends ConnectRecord<R>> implements Transfor
         SimpleConfig config = new SimpleConfig(CONFIG_DEF, props);
         fieldKeys = config.getList(ConfigName.JOINED_FIELDS);
         separator = config.getString(ConfigName.SEPARATOR);
-        destinationKey = config.getString(ConfigName.DESTINATION);
+        destinationSpec = DestinationFieldSpec.parse(config.getString(ConfigName.DESTINATION));
 
         schemaUpdateCache = new SynchronizedCache<>(new LRUCache<>(16));
     }
@@ -88,14 +111,14 @@ public abstract class JoinFields<R extends ConnectRecord<R>> implements Transfor
 
         ArrayList<String> destinationValues = new ArrayList<>();
 
-        for (String fieldKey: fieldKeys) {
+        for (String fieldKey : fieldKeys) {
             if (updatedValue.containsKey(fieldKey)) {
                 final Object fieldValue = updatedValue.get(fieldKey);
                 destinationValues.add(fieldValue.toString());
             }
         }
 
-        updatedValue.put(destinationKey, String.join(separator, destinationValues));
+        updatedValue.put(destinationSpec.name, String.join(separator, destinationValues));
 
         return newRecord(record, null, updatedValue);
     }
@@ -122,7 +145,7 @@ public abstract class JoinFields<R extends ConnectRecord<R>> implements Transfor
             updatedValue.put(fieldName, fieldValue);
         }
 
-        updatedValue.put(destinationKey, String.join(separator, destinationValues));
+        updatedValue.put(destinationSpec.name, String.join(separator, destinationValues));
 
         return newRecord(record, updatedSchema, updatedValue);
     }
@@ -134,7 +157,10 @@ public abstract class JoinFields<R extends ConnectRecord<R>> implements Transfor
             builder.field(field.name(), field.schema());
         }
 
-        builder.field(destinationKey, Schema.STRING_SCHEMA);
+        builder.field(
+                destinationSpec.name
+                , destinationSpec.optional ? Schema.OPTIONAL_STRING_SCHEMA : Schema.STRING_SCHEMA
+        );
 
         return builder.build();
     }

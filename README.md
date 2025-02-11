@@ -28,11 +28,11 @@ This SMT supports joining values into the record Key or Value
 
 Properties:
 
-| Name                      | Description                                              | Type   | Default    | Importance |
-|---------------------------|----------------------------------------------------------|--------|------------|------------|
-| `join-fields.fields`      | List of the fields keys to join into the destination key | List   | empty list | High       |
-| `join-fields.separator`   | Separator of the fields values joined                    | String | .          | High       |
-| `join-fields.destination` | Key name of the joined field                             | String | output     | High       |
+| Name                      | Description                                                                                                                    | Type   | Default    | Importance |
+|---------------------------|--------------------------------------------------------------------------------------------------------------------------------|--------|------------|------------|
+| `join-fields.fields`      | List of the fields keys to join into the destination key                                                                       | List   | empty list | High       |
+| `join-fields.separator`   | Separator of the fields values joined                                                                                          | String | .          | High       |
+| `join-fields.destination` | Key name of the joined field (with ? suffix to make it optional or with ! to make it mandatory, will be optional if no suffix) | String | output     | High       |
 
 
 Example on how to add to your connector:
