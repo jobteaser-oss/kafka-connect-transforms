@@ -5,7 +5,7 @@
 
 	<groupId>com.jobteaser.kafka.connect.transforms</groupId>
 	<artifactId>kafka-connect-transforms</artifactId>
-	<version>0.3.3</version>
+	<version>0.4.0</version>
 	<description>
 		Additional Kafka Connect Single Message Transforms (SMT).
 		- one to remove null bytes ('\x00') from the values of either the Key or the Value fields of each record. (can be used when sink-ing to PostgreSQL as it doesn't support this char).
