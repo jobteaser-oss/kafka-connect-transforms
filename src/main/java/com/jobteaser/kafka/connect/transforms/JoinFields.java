@@ -134,15 +134,22 @@ public abstract class JoinFields<R extends ConnectRecord<R>> implements Transfor
 
         final Struct updatedValue = new Struct(updatedSchema);
 
-        ArrayList<String> destinationValues = new ArrayList<>();
+        Map<String, String> destinationValuesMapping = new HashMap<>();
 
         for (Field field : value.schema().fields()) {
             String fieldName = field.name();
             Object fieldValue = value.get(field);
             if (fieldKeys.contains(fieldName)) {
-                destinationValues.add(fieldValue.toString());
+                destinationValuesMapping.put(fieldName, fieldValue.toString());
             }
             updatedValue.put(fieldName, fieldValue);
+        }
+
+        List<String> destinationValues = new ArrayList<>();
+        for (String fieldKey : fieldKeys) {
+            if (destinationValuesMapping.containsKey(fieldKey)) {
+                destinationValues.add(destinationValuesMapping.get(fieldKey));
+            }
         }
 
         updatedValue.put(destinationSpec.name, String.join(separator, destinationValues));

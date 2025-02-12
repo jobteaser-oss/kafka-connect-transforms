@@ -90,21 +90,21 @@ public class JoinFieldsTest {
 
         final Schema initialStructSchema =
                 SchemaBuilder.struct().name("name").version(1).doc("doc")
-                        .field("test_str", Schema.STRING_SCHEMA)
                         .field("test_int", Schema.INT32_SCHEMA)
+                        .field("test_str", Schema.STRING_SCHEMA)
                         .field("test_bool", Schema.BOOLEAN_SCHEMA)
                         .field("test_float", Schema.FLOAT64_SCHEMA)
                         .build();
         final Struct initialStruct = new Struct(initialStructSchema)
+                .put("test_bool", false)
                 .put("test_str", "abc")
                 .put("test_int", 123)
-                .put("test_float", 456.78)
-                .put("test_bool", false);
+                .put("test_float", 456.78);
 
         final Schema expectedStructSchema =
                 SchemaBuilder.struct().name("name").version(1).doc("doc")
-                        .field("test_str", Schema.STRING_SCHEMA)
                         .field("test_int", Schema.INT32_SCHEMA)
+                        .field("test_str", Schema.STRING_SCHEMA)
                         .field("test_bool", Schema.BOOLEAN_SCHEMA)
                         .field("test_float", Schema.FLOAT64_SCHEMA)
                         .field("opt", Schema.STRING_SCHEMA)
