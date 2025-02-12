@@ -5,12 +5,13 @@
 
 	<groupId>com.jobteaser.kafka.connect.transforms</groupId>
 	<artifactId>kafka-connect-transforms</artifactId>
-	<version>0.4.0</version>
+	<version>0.4.1</version>
 	<description>
 		Additional Kafka Connect Single Message Transforms (SMT).
 		- one to remove null bytes ('\x00') from the values of either the Key or the Value fields of each record. (can be used when sink-ing to PostgreSQL as it doesn't support this char).
 		- one which extends the default TimestampConverter to support int32 from Debezium (days since Epoch) and passing a regex to match against multiple fields.
 		- one to obfuscate first part of email addresses.
+		- one to join some fields into a new one using a separator.
 	</description>
 
 	<properties>
